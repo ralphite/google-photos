@@ -36,6 +36,8 @@ const server = http.Server(app);
 const request_r = require('request')
 const fs = require('fs');
 
+const imageCache = {};
+
 // Use the EJS template engine
 app.set('view engine', 'ejs');
 

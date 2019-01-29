@@ -64,39 +64,22 @@ function showPreview(source, mediaItems) {
     const time = item.mediaMetadata.creationTime;
     const captionText = `${description} ${model} (${time})`
 
-    // Each image is wrapped by a link for the fancybox gallery.
-    // The data-width and data-height attributes are set to the
-    // height and width of the original image. This allows the
-    // fancybox library to display a scaled up thumbnail while the
-    // full sized image is being loaded.
-    // The original width and height are part of the mediaMetadata of
-    // an image media item from the API.
-    const linkToFullImage = $('<a />')
-                                .attr('href', fullUrl)
-                                .attr('data-fancybox', 'gallery')
-                                .attr('data-width', item.mediaMetadata.width)
-                                .attr('data-height', item.mediaMetadata.height);
     // Add the thumbnail image to the link to the full image for fancybox.
     const thumbnailImage = $('<img />')
                                .attr('src', thumbnailUrl)
                                .attr('alt', captionText)
                                .addClass('img-fluid rounded thumbnail');
-    linkToFullImage.append(thumbnailImage);
 
-    // The caption consists of the caption text and a link to open the image
-    // in Google Photos.
-    const imageCaption =
-        $('<figcaption />').addClass('hidden').text(captionText);
-    const linkToGooglePhotos = $('<a />')
-                                   .attr('href', item.productUrl)
-                                   .text('[Click to open in Google Photos]');
-    imageCaption.append($('<br />'));
-    imageCaption.append(linkToGooglePhotos);
-    linkToFullImage.append(imageCaption);
+    console.log(item);
+
+    const selectBtn = $('<button data-name="' + item.filename + '" class="select-button mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect"><i class="material-icons">add</i></button>');
+
 
     // Add the link (consisting of the thumbnail image and caption) to
     // container.
-    $('#images-container').append(linkToFullImage);
+    $('#images-container').append(thumbnailImage);
+    $('#images-container').append(selectBtn);
+    $('#images-container').append('<p>');
   });
 };
 
@@ -128,29 +111,33 @@ $(document).ready(() => {
   loadQueue();
 
   // Set up the fancybox image gallery.
-  $().fancybox({
-    selector: '[data-fancybox="gallery"]',
-    loop: true,
-    buttons: ['slideShow', 'fullScreen', 'close'],
-    image: {preload: true},
-    transitionEffect: 'fade',
-    transitionDuration: 1000,
-    fullScreen: {autoStart: false},
-    // Automatically advance after 3s to next photo.
-    slideShow: {autoStart: true, speed: 3000},
-    // Display the contents figcaption element as the caption of an image
-    caption: function(instance, item) {
-      return $(this).find('figcaption').html();
-    }
-  });
+  // $().fancybox({
+  //   selector: '[data-fancybox="gallery"]',
+  //   loop: true,
+  //   buttons: ['slideShow', 'fullScreen', 'close'],
+  //   image: {preload: true},
+  //   transitionEffect: 'fade',
+  //   transitionDuration: 1000,
+  //   fullScreen: {autoStart: false},
+  //   // Automatically advance after 3s to next photo.
+  //   slideShow: {autoStart: true, speed: 3000},
+  //   // Display the contents figcaption element as the caption of an image
+  //   caption: function(instance, item) {
+  //     return $(this).find('figcaption').html();
+  //   }
+  // });
 
   // Clicking the 'view fullscreen' button opens the gallery from the first
   // image.
-  $('#startSlideshow')
-      .on('click', (e) => $('#images-container a').first().click());
+  // $('#startSlideshow')
+  //     .on('click', (e) => $('#images-container a').first().click());
 
   // Clicking log out opens the log out screen.
   $('#logout').on('click', (e) => {
     window.location = '/logout';
+  });
+
+  $('.select-button').click(function(e) {
+    console.log(e)
   });
 });
