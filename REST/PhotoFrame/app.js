@@ -33,6 +33,9 @@ const app = express();
 const fileStore = sessionFileStore(session);
 const server = http.Server(app);
 
+const request_r = require('request')
+const fs = require('fs');
+
 // Use the EJS template engine
 app.set('view engine', 'ejs');
 
@@ -93,7 +96,7 @@ const sessionMiddleware = session({
   secret: 'photo frame sample',
 });
 
-// Console transport for winton.
+// Console transport for winston.
 const consoleTransport = new winston.transports.Console();
 
 // Set up winston logging.
@@ -399,22 +402,27 @@ function renderIfAuthenticated(req, res, page) {
 // and they are returned in the response.
 function returnPhotos(res, userId, data, searchParameter) {
   if (data.error) {
-    returnError(res, data)
+      returnError(res, data)
   } else {
-    // Remove the pageToken and pageSize from the search parameters.
-    // They will be set again when the request is submitted but don't need to be
-    // stored.
-    delete searchParameter.pageToken;
-    delete searchParameter.pageSize;
+      // Remove the pageToken and pageSize from the search parameters.
+      // They will be set again when the request is submitted but don't need to be
+      // stored.
+      delete searchParameter.pageToken;
+      delete searchParameter.pageSize;
 
-    // Cache the media items that were loaded temporarily.
-    mediaItemCache.setItemSync(userId, data.photos);
-    // Store the parameters that were used to load these images. They are used
-    // to resubmit the query after the cache expires.
-    storage.setItemSync(userId, {parameters: searchParameter});
+      // Cache the media items that were loaded temporarily.
+      mediaItemCache.setItemSync(userId, data.photos);
+      // Store the parameters that were used to load these images. They are used
+      // to resubmit the query after the cache expires.
+      storage.setItemSync(userId, {parameters: searchParameter});
 
-    // Return the photos and parameters back int the response.
-    res.status(200).send({photos: data.photos, parameters: searchParameter});
+      // Return the photos and parameters back int the response.
+      data.photos.forEach(function (photo) {
+          logger.info('Downloading: ' + photo.filename)
+          request_r(photo.baseUrl + '=w1280-h720').pipe(fs.createWriteStream('persis-imagefiles/' + photo.filename))
+      })
+
+      res.status(200).send({photos: data.photos, parameters: searchParameter});
   }
 }
 
@@ -504,6 +512,7 @@ async function libraryApiSearch(authToken, parameters) {
   }
 
   logger.info('Search complete.');
+
   return {photos, parameters, error};
 }
 
